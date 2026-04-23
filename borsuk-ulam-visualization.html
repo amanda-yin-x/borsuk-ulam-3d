@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Borsuk–Ulam Theorem · Amanda Yin · Winter 2026</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\\\[',right:'\\\\]',display:true},{left:'\\\\(',right:'\\\\)',display:false}],throwOnError:false});"></script>
+
+<style>
+:root {
+  --cream: #f4efe4;
+  --cream-soft: #faf6ec;
+  --cream-deep: #eae3d3;
+  --ink: #1c1a16;
+  --ink-soft: #3a362e;
+  --ink-mute: #6b6459;
+  --rule: #c8bfae;
+  --terracotta: #b04e2c;
+  --terracotta-deep: #8a3a1e;
+  --cobalt: #1e4d8c;
+  --cobalt-deep: #143866;
+  --gold: #a8762c;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(176, 78, 44, 0.015) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(30, 77, 140, 0.015) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ================ TOP BAR ================ */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--cream-soft);
+  border-bottom: 1px solid var(--rule);
+  backdrop-filter: blur(8px);
+  padding: 1rem 2rem;
+}
+
+.topbar__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.topbar__mark {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--terracotta-deep);
+  font-size: 1.3rem;
+  background: var(--cream);
+}
+
+.topbar__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.15;
+}
+.topbar__sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-top: 0.15rem;
+}
+
+.topbar__sublink {
+  color: var(--terracotta-deep);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+  font-weight: 600;
+}
+.topbar__sublink:hover {
+  border-bottom-color: var(--terracotta);
+}
+
+/* ============ TAB NAV ============ */
+.tabs {
+  display: flex;
+  gap: 0.1rem;
+  flex-wrap: wrap;
+  row-gap: 0.3rem;
+}
+
+.tab-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  padding: 0.7rem 1.1rem;
+  color: var(--ink-mute);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  line-height: 1.4;
+}
+
+.tab-btn::before {
+  content: attr(data-idx);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--terracotta-deep);
+  margin-right: 0.6rem;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+}
+
+.tab-btn:hover { color: var(--ink); }
+
+.tab-btn.active {
+  color: var(--terracotta-deep);
+}
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 1.1rem;
+  right: 1.1rem;
+  height: 2px;
+  background: var(--terracotta);
+}
+
+@media (max-width: 900px) {
+  .topbar { padding: 0.8rem 1rem; }
+  .topbar__inner { gap: 1rem; }
+  .tab-btn { padding: 0.5rem 0.7rem; font-size: 10px; letter-spacing: 0.1em; }
+}
+
+/* ============ PANEL / CONTENT AREA ============ */
+.panel {
+  display: none;
+  animation: fadeIn 0.4s ease-out;
+}
+.panel.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.panel-head {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.panel-head__eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--terracotta-deep);
+  margin-bottom: 0.8rem;
+}
+
+.panel-head__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 0.8rem;
+}
+
+.panel-head__title em {
+  font-style: italic;
+  color: var(--terracotta-deep);
+}
+
+.panel-head__kicker {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--ink-soft);
+  max-width: 640px;
+}
+
+/* ============ TWO-COLUMN PROSE + VISUAL ============ */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+}
+
+.split--narrow {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+
+@media (max-width: 900px) {
+  .split, .split--narrow { grid-template-columns: 1fr; gap: 2rem; }
+}
+
+.prose p { margin-bottom: 1rem; }
+.prose h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 1.8rem 0 0.8rem;
+  color: var(--ink);
+}
+.prose h4 {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin: 1.8rem 0 0.6rem;
+  font-weight: 600;
+}
+.prose em { font-style: italic; }
+.prose strong { font-weight: 600; }
+
+.prose a {
+  color: var(--cobalt-deep);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+.prose a:hover {
+  color: var(--terracotta-deep);
+  border-bottom-color: var(--terracotta);
+}
+
+.prose ul, .prose ol {
+  margin: 0.8rem 0 1.2rem 1.3rem;
+}
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+.prose p.drop::first-letter {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 4em;
+  line-height: 0.85;
+  float: left;
+  padding: 0.12rem 0.6rem 0 0;
+  font-weight: 500;
+  color: var(--terracotta-deep);
+  font-style: italic;
+}
+
+/* ============ VISUAL CARD (right column) ============ */
+.vcard {
+  background: var(--cream-soft);
+  border: 1px solid var(--rule);
+  padding: 2rem;
+  box-shadow: 0 1px 4px rgba(28, 26, 22, 0.04);
+}
+
+.vcard--ink {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+
+.vcard__label {
+  font-family: 'Inter', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+}
+
+.vcard--ink .vcard__label { color: rgba(244, 239, 228, 0.6); }
+
+.vcard__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: var(--ink);
+}
+.vcard--ink .vcard__title { color: var(--cream); }
+
+.vcard svg { display: block; max-width: 100%; height: auto; }
+
+/* ============ THEOREM BOXES ============ */
+.theorem {
+  border: 1px solid var(--rule);
+  background: var(--cream-soft);
+  padding: 1.5rem 1.8rem;
+  margin: 1.5rem 0;
+  position: relative;
+}
+.theorem::before {
+  content: attr(data-label);
+  position: absolute;
+  top: -9px;
+  left: 1rem;
+  background: var(--cream);
+  padding: 0 0.7rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--terracotta-deep);
+  font-weight: 600;
+}
+.theorem p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.08rem;
+  line-height: 1.55;
+  margin-bottom: 0.6rem;
+}
+.theorem p:last-child { margin-bottom: 0; }
+
+/* ============ CALLOUT / ASIDE ============ */
+.aside {
+  border-left: 2px solid var(--terracotta);
+  padding: 0.6rem 0 0.6rem 1.2rem;
+  margin: 1.5rem 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.aside cite {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-top: 0.6rem;
+}
+
+/* ============ PROOF STEPS ============ */
+.proof-step {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px dashed var(--rule);
+  align-items: start;
+}
+
+.proof-step:last-child { border-bottom: none; }
+
+.proof-step__num {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 2rem;
+  color: var(--terracotta);
+  line-height: 1;
+  font-weight: 500;
+}
+
+.proof-step__body h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+/* Override .prose h4 defaults when h4 lives inside proof-step__body */
+.prose .proof-step__body h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  color: var(--ink);
+  margin: 0 0 0.4rem;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.proof-step__body p {
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  margin-bottom: 0.6rem;
+}
+
+/* ============ PORTRAIT ROW ============ */
+.portraits {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+@media (max-width: 700px) {
+  .portraits { grid-template-columns: 1fr; }
+}
+
+.portrait {
+  border: 1px solid var(--rule);
+  padding: 1.2rem;
+  background: var(--cream-soft);
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.portrait img {
+  width: 100%;
+  filter: sepia(20%) contrast(0.98);
+  border: 1px solid var(--rule);
+}
+
+.portrait__name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.portrait__dates {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 0.6rem;
+}
+
+.portrait__body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* ============ VIDEO SHOWCASE ============ */
+.video-frame {
+  width: 100%;
+  background: var(--ink);
+  border: 1px solid var(--rule);
+  box-shadow: 0 8px 32px rgba(28, 26, 22, 0.12);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  position: relative;
+}
+.video-frame video {
+  width: 100%; height: 100%; object-fit: contain;
+  background: var(--cream);
+}
+
+.video-placeholder {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--cream) 0%, var(--cream-deep) 100%);
+  color: var(--ink-mute);
+  text-align: center;
+  padding: 2rem;
+}
+.video-placeholder.visible { display: flex; }
+.video-placeholder__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+.video-placeholder__note {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.video-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+}
+
+/* ============ BLENDER NODE DIAGRAM ============ */
+.nodegraph {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+}
+
+.node-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.node {
+  background: var(--cream-soft);
+  border: 1px solid var(--rule);
+  padding: 0.7rem 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.node strong {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--terracotta-deep);
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.arrow {
+  color: var(--ink-mute);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+}
+
+/* ============ TECHNIQUE CARDS (stacked smaller) ============ */
+.techlist {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.2rem;
+  margin: 1.5rem 0;
+}
+
+.tech {
+  border-top: 2px solid var(--terracotta);
+  padding: 0.9rem 0 0;
+}
+.tech__name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+}
+.tech__desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin-bottom: 0.5rem;
+}
+.tech__tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 0.1rem 0.45rem;
+  background: var(--cream-soft);
+  border: 1px solid var(--rule);
+  color: var(--ink-soft);
+  margin-right: 0.3rem;
+  margin-bottom: 0.2rem;
+}
+
+/* ============ REFERENCES ============ */
+.refs {
+  list-style: none;
+  counter-reset: ref;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+.refs li {
+  counter-increment: ref;
+  padding: 1rem 0;
+  border-bottom: 1px dotted var(--rule);
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  gap: 0.5rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.refs li::before {
+  content: '[' counter(ref) ']';
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--terracotta-deep);
+  padding-top: 0.3rem;
+  letter-spacing: 0.03em;
+}
+.refs .ref-title {
+  font-weight: 500;
+  color: var(--ink);
+  font-style: italic;
+}
+.refs .ref-meta {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--ink-mute);
+  margin-top: 0.15rem;
+}
+.refs a {
+  color: var(--cobalt-deep);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--rule);
+}
+.refs a:hover { color: var(--terracotta-deep); }
+
+/* ============ FOOTNOTE RAIL ============ */
+.footrail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ink-mute);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.footrail__nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.footrail__btn {
+  background: transparent;
+  border: 1px solid var(--rule);
+  padding: 0.5rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.footrail__btn:hover {
+  background: var(--terracotta);
+  color: var(--cream);
+  border-color: var(--terracotta);
+}
+.footrail__btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ============ COLOPHON ============ */
+.colophon {
+  background: var(--ink);
+  color: var(--cream-deep);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  margin-top: 4rem;
+}
+.colophon__mark {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--terracotta);
+}
+.colophon__text {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--cream);
+  margin: 0.5rem auto 1rem;
+  max-width: 500px;
+}
+.colophon__meta {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 228, 0.45);
+}
+
+/* ============ EQUATION HIGHLIGHT ============ */
+.eq-highlight {
+  background: var(--cream-soft);
+  border: 1px solid var(--rule);
+  padding: 1.2rem;
+  margin: 1.2rem 0;
+  text-align: center;
+}
+
+.katex { font-size: 1.02em !important; }
+
+/* ============ DIMENSION LADDER (for Scepin) ============ */
+.ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.ladder__rung {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--cream-soft);
+  border: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.ladder__rung.base { background: var(--terracotta); color: white; border-color: var(--terracotta); }
+.ladder__dim {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--terracotta-deep);
+  min-width: 50px;
+}
+.ladder__rung.base .ladder__dim { color: white; }
+.ladder__arrow { color: var(--ink-mute); }
+
+@media print {
+  .tab-btn { display: none; }
+  .panel { display: block !important; page-break-after: always; }
+  .footrail { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- STICKY TOP BAR WITH TAB NAV -->
+<!-- ============================================================ -->
+<header class="topbar">
+  <div class="topbar__inner">
+    <div class="topbar__brand">
+      <div class="topbar__mark">∞</div>
+      <div>
+        <div class="topbar__title">The Borsuk–Ulam Theorem</div>
+        <div class="topbar__sub">
+          <a href="https://amanda-yin-x.github.io/" target="_blank" rel="noopener" class="topbar__sublink">Amanda Yin</a>
+          · supervised by Prof. S. Aretakis
+          · Winter 2026
+        </div>
+      </div>
+    </div>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="overview" data-idx="01" role="tab">Overview</button>
+      <button class="tab-btn" data-tab="statement" data-idx="02" role="tab">Theorem</button>
+      <button class="tab-btn" data-tab="proof" data-idx="03" role="tab">1D Proof</button>
+      <button class="tab-btn" data-tab="reduction" data-idx="04" role="tab">Higher Dims</button>
+      <button class="tab-btn" data-tab="visualization" data-idx="05" role="tab">Visualization</button>
+      <button class="tab-btn" data-tab="build" data-idx="06" role="tab">How It Was Built</button>
+      <button class="tab-btn" data-tab="references" data-idx="07" role="tab">References</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ============================================================ -->
+<!-- TAB 01 · OVERVIEW -->
+<!-- ============================================================ -->
+<section class="panel active" id="overview">
+  <div class="container">
+
+    <div class="panel-head">
+      <div class="panel-head__eyebrow">§ 01 · Overview</div>
+      <h1 class="panel-head__title">A promise about <em>continuous maps</em>.</h1>
+      <p class="panel-head__kicker">
+        Right now on Earth there are two points on exactly opposite sides
+        of the planet that have the same temperature and the same air
+        pressure. This is not a coincidence. It is a theorem.
+      </p>
+    </div>
+
+    <div class="split">
+      <div class="prose">
+        <p class="drop">
+          Pick any two quantities you can measure continuously across the
+          entire surface of a sphere. Temperature and pressure. Altitude
+          and humidity. Whatever you want. The theorem says there will
+          always be some point whose exact opposite has matching values.
+          Down to the last digit. No matter how chaotic the data looks.
+        </p>
+
+        <p>
+          Stanisław Ulam conjectured it around 1930 during late-night
+          discussions at the Scottish Café in Lwów. Karol Borsuk proved
+          it three years later in his paper <em>Drei Sätze über die
+          n-dimensionale euklidische Sphäre</em>, published in
+          <em>Fundamenta Mathematicae</em> in 1933.<sup>[1]</sup>
+        </p>
+
+        <p>
+          What makes it beautiful is how little it assumes. The only
+          requirement is <em>continuity</em>. No smoothness, no symmetry,
+          no hidden structure. Just the basic rule that nearby points
+          have nearby values. From that alone, you get an exact match.
+          It feels like magic but it's really topology.
+        </p>
+
+        <div class="aside">
+          &ldquo;The Borsuk–Ulam theorem is a wonderful piece of topology:
+          a precisely stated, geometrically vivid result whose proof
+          requires real mathematical depth, but whose consequences reach
+          into combinatorics, fair division, and even computer science.&rdquo;
+          <cite>Jiří Matoušek, <em>Using the Borsuk–Ulam Theorem</em> (2003)</cite>
+        </div>
+      </div>
+
+      <div class="vcard vcard--ink">
+        <div class="vcard__label">Visualization · $n = 2$</div>
+        <div class="vcard__title" style="color:var(--cream);">Two continuous fields on a sphere</div>
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="globeGrad" cx="38%" cy="35%" r="65%">
+              <stop offset="0%" stop-color="#e9a88c" />
+              <stop offset="35%" stop-color="#c8805a" />
+              <stop offset="68%" stop-color="#5e87b8" />
+              <stop offset="100%" stop-color="#2a4266" />
+            </radialGradient>
+            <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffdba8" stop-opacity="1" />
+              <stop offset="100%" stop-color="#ffdba8" stop-opacity="0" />
+            </radialGradient>
+            <filter id="soft"><feGaussianBlur stdDeviation="1.5" /></filter>
+          </defs>
+
+          <!-- sphere -->
+          <circle cx="200" cy="200" r="130" fill="url(#globeGrad)" />
+
+          <!-- temperature/pressure blobs (just painted on) -->
+          <ellipse cx="160" cy="160" rx="45" ry="35" fill="#e08655" opacity="0.35" filter="url(#soft)" />
+          <ellipse cx="245" cy="220" rx="38" ry="30" fill="#5e87b8" opacity="0.35" filter="url(#soft)" />
+          <ellipse cx="170" cy="250" rx="30" ry="25" fill="#e08655" opacity="0.25" filter="url(#soft)" />
+
+          <!-- diameter line through antipodes -->
+          <line x1="145" y1="140" x2="255" y2="260" stroke="#3a362e" stroke-width="1.5" opacity="0.7" />
+
+          <!-- antipodal markers -->
+          <circle cx="145" cy="140" r="6" fill="#e08655" stroke="#8a3a1e" stroke-width="1.5" />
+          <circle cx="255" cy="260" r="6" fill="#5e87b8" stroke="#143866" stroke-width="1.5" />
+
+          <!-- glow on markers -->
+          <circle cx="145" cy="140" r="14" fill="url(#glow1)" opacity="0.5" />
+          <circle cx="255" cy="260" r="14" fill="url(#glow1)" opacity="0.5" />
+
+          <!-- labels -->
+          <text x="120" y="115" font-family="'Cormorant Garamond', serif" font-style="italic"
+                font-size="18" fill="#f4efe4">x</text>
+          <text x="265" y="285" font-family="'Cormorant Garamond', serif" font-style="italic"
+                font-size="18" fill="#f4efe4">−x</text>
+
+          <!-- f(x) = f(-x) banner -->
+          <text x="200" y="380" text-anchor="middle"
+                font-family="'Cormorant Garamond', serif" font-style="italic"
+                font-size="20" fill="#a8762c">
+            f(x) = f(−x)
+          </text>
+        </svg>
+
+        <div style="font-family: 'Inter', sans-serif; font-size: 11.5px; color: rgba(244, 239, 228, 0.7); margin-top: 1rem; line-height: 1.55;">
+          Every continuous map $f\colon S^2 \to \mathbb{R}^2$
+          sends <em>some</em> pair of antipodal points
+          $(x,\, -x)$ to the same value.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- TAB 02 · STATEMENT -->
+<!-- ============================================================ -->
+<section class="panel" id="statement">
+  <div class="container">
+
+    <div class="panel-head">
+      <div class="panel-head__eyebrow">§ 02 · The theorem</div>
+      <h1 class="panel-head__title">Three ways to say the <em>same thing</em>.</h1>
+      <p class="panel-head__kicker">
+        The theorem can be phrased in a few different ways. All three
+        versions below are equivalent. Each one highlights a different
+        angle on the same idea.
+      </p>
+    </div>
+
+    <div class="split">
+      <div class="prose">
+        <div class="theorem" data-label="Theorem (Borsuk, 1933)">
+          <p><strong>Coincidence form.</strong> Let
+          $f \colon S^n \to \mathbb{R}^n$ be continuous. Then there
+          exists $x \in S^n$ such that $f(x) = f(-x)$.</p>
+        </div>
+
+        <div class="theorem" data-label="Equivalent · odd map vanishing">
+          <p>Let $g \colon S^n \to \mathbb{R}^n$ be a continuous odd
+          map, meaning $g(-x) = -g(x)$. Then $g(x_0) = 0$ for some
+          $x_0 \in S^n$.</p>
+        </div>
+
+        <div class="theorem" data-label="Equivalent · no odd retraction">
+          <p>There is no continuous odd map $h \colon S^n \to S^{n-1}$.
+          In plainer words: you can't squish a sphere onto a smaller
+          sphere while keeping opposite points opposite.</p>
+        </div>
+
+        <p style="margin-top: 1.2rem;">
+          Moving between these versions is not hard. Normalize
+          $f(x) - f(-x)$ and you get an odd sphere-to-sphere map. Treat
+          the vanishing of an odd map as the obstruction and you get
+          version 2. For the visualization that follows, the
+          <em>coincidence form</em> is the one to keep in mind. It's
+          the one with the Earth story.
+        </p>
+      </div>
+
+      <div class="vcard">
+        <div class="vcard__label">Why the dimension matters</div>
+        <div class="vcard__title">$n$ outputs fail · $n + 1$ succeed</div>
+
+        <p style="font-size: 14px; color: var(--ink-soft); line-height: 1.65; margin: 0.8rem 0;">
+          The theorem is <strong>tight</strong>. Map $S^n$ into
+          $\mathbb{R}^{n+1}$ (one more output coordinate) and the
+          result breaks. Here's the counterexample:
+        </p>
+
+        <div class="eq-highlight">
+          $S^n \hookrightarrow \mathbb{R}^{n+1}, \quad x \mapsto x$
+        </div>
+
+        <p style="font-size: 14px; color: var(--ink-soft); line-height: 1.65;">
+          Just embed the sphere into Euclidean space as itself.
+          That's continuous, and clearly no two opposite points land
+          on the same spot (they're opposite).
+        </p>
+
+        <p style="font-size: 14px; color: var(--ink-soft); line-height: 1.65; margin-top: 0.8rem;">
+          So the theorem is saying something precise: $n$ continuous
+          outputs per point is <em>just barely</em> not enough to
+          separate all the antipodal pairs. With $n+1$ outputs you
+          can. That gap of one dimension is what the theorem is really
+          about.
+        </p>
+
+        <!-- mini diagram showing the dimension gap -->
+        <svg viewBox="0 0 340 120" xmlns="http://www.w3.org/2000/svg" style="margin-top: 1.2rem;">
+          <rect x="20" y="30" width="120" height="60" fill="#f4e5d6" stroke="#b04e2c" stroke-width="1.5" />
+          <text x="80" y="55" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#8a3a1e">S^n → R^n</text>
+          <text x="80" y="75" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-style="italic" font-size="13" fill="#3a362e">always a match</text>
+
+          <text x="175" y="65" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="18" fill="#6b6459">vs</text>
+
+          <rect x="210" y="30" width="120" height="60" fill="#e6ecf5" stroke="#1e4d8c" stroke-width="1.5" />
+          <text x="270" y="55" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#143866">S^n → R^(n+1)</text>
+          <text x="270" y="75" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-style="italic" font-size="13" fill="#3a362e">can avoid all</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- bottom row: why n=2 is interesting -->
+    <div class="panel-head" style="margin-top: 3.5rem;">
+      <div class="panel-head__eyebrow">§ 02 · continued</div>
+      <h1 class="panel-head__title" style="font-size: 1.8rem;">Why the $n = 2$ case is <em>the</em> interesting one.</h1>
+    </div>
+
+    <div class="prose" style="max-width: 780px;">
+      <p>
+        Earth's surface is a 2-sphere. Temperature and pressure are
+        two continuous functions on it. Together they make up a map
+        $f \colon S^2 \to \mathbb{R}^2$ where $f(x) = (T(x),\, P(x))$.
+        Apply the theorem with $n = 2$ and you get a point $x^\star$
+        where $T(x^\star) = T(-x^\star)$ <em>and</em>
+        $P(x^\star) = P(-x^\star)$ at the same time.
+      </p>
+
+      <p>
+        The word <em>and</em> is doing all the work here. Matching
+        one equation on its own is not hard. Walk around any great
+        circle measuring temperature, apply the Intermediate Value
+        Theorem, done. Same story for pressure. But Borsuk–Ulam
+        promises something much stronger: you can find
+        <em>one single</em> antipodal pair that satisfies
+        <em>both</em> equations simultaneously. That joint condition
+        is what no elementary 1D argument can provide.
+      </p>
+
+      <p>
+        The conclusion is a little eerie when you picture it. Right
+        this second there is some spot on Earth whose exact opposite
+        has the same temperature <em>and</em> the same pressure. Down
+        to the last millibar. Every moment. Always.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- TAB 03 · 1D PROOF -->
+<!-- ============================================================ -->
+<section class="panel" id="proof">
+  <div class="container">
+
+    <div class="panel-head">
+      <div class="panel-head__eyebrow">§ 03 · The one-dimensional case</div>
+      <h1 class="panel-head__title">The proof you can do <em>in your head</em>.</h1>
+      <p class="panel-head__kicker">
+        The $n = 1$ case has a proof so clean it fits in one paragraph.
+        Three ingredients: oddness, continuity, and the Intermediate
+        Value Theorem.
+      </p>
+    </div>
+
+    <div class="split">
+      <div class="prose">
+        <h4>Setup</h4>
+        <p>
+          Let $f \colon S^1 \to \mathbb{R}$ be any continuous function
+          on the circle. Picture it as temperature measured as you
+          walk once around the equator. We want to show there are two
+          opposite points $x$ and $-x$ with $f(x) = f(-x)$.
+        </p>
+
+        <h4>The auxiliary function</h4>
+        <p>Define</p>
+
+        <div class="eq-highlight">
+          $g(x) \;=\; f(x) - f(-x)$
+        </div>
+
+        <p>
+          Since $f$ is continuous, so is $g$. Now watch what happens
+          when you swap $x$ for $-x$:
+        </p>
+
+        <div class="eq-highlight">
+          $g(-x) \;=\; f(-x) - f(x) \;=\; -\,g(x)$
+        </div>
+
+        <p>
+          So $g$ is an <em>odd function</em>. Its value at any point
+          equals the negative of its value at the opposite point. That
+          is the only thing we need.
+        </p>
+
+        <h4>The IVT finish</h4>
+        <p>Pick any starting point $p$ on the circle. One of three things must be true:</p>
+
+        <div class="proof-step">
+          <div class="proof-step__num">i</div>
+          <div class="proof-step__body">
+            <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;text-transform:none;letter-spacing:0;color:var(--ink);">$g(p) = 0$</h4>
+            <p>Then $p$ and $-p$ already have equal $f$-values. Done.</p>
+          </div>
+        </div>
+
+        <div class="proof-step">
+          <div class="proof-step__num">ii</div>
+          <div class="proof-step__body">
+            <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;text-transform:none;letter-spacing:0;color:var(--ink);">$g(p) > 0$</h4>
+            <p>Then $g(-p) = -g(p) < 0$.</p>
+          </div>
+        </div>
+
+        <div class="proof-step">
+          <div class="proof-step__num">iii</div>
+          <div class="proof-step__body">
+            <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;text-transform:none;letter-spacing:0;color:var(--ink);">$g(p) < 0$</h4>
+            <p>Then $g(-p) = -g(p) > 0$.</p>
+          </div>
+        </div>
+
+        <p style="margin-top: 1.2rem;">
+          Cases ii and iii are the same story. $g$ is continuous and
+          takes both positive and negative values somewhere on the
+          circle. By the <strong>Intermediate Value Theorem</strong>,
+          applied along either arc from $p$ to $-p$, there's a point
+          $q$ in between where $g(q) = 0$. Meaning $f(q) = f(-q)$.
+          That's our antipodal pair. <strong>∎</strong>
+        </p>
+      </div>
+
+      <div class="vcard">
+        <div class="vcard__label">Visual · the odd function $g$</div>
+        <div class="vcard__title">Why $g$ has to cross zero</div>
+
+        <!-- SVG showing the odd function on a circle, unfurled -->
+        <svg viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">
+          <!-- x-axis -->
+          <line x1="40" y1="180" x2="380" y2="180" stroke="#6b6459" stroke-width="1" />
+          <!-- axis labels -->
+          <text x="40" y="200" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6459">p</text>
+          <text x="210" y="200" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6459">−p</text>
+          <text x="375" y="200" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6459">p</text>
+          <text x="385" y="185" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6459">→</text>
+
+          <!-- zero line label -->
+          <text x="20" y="184" font-family="'JetBrains Mono', monospace" font-size="11" fill="#6b6459">0</text>
+
+          <!-- the curve g(x), odd about the midpoint -->
+          <path d="M 40 180 Q 90 60, 130 95 T 210 180 Q 260 300, 300 265 T 380 180"
+                fill="none" stroke="#b04e2c" stroke-width="2.5" />
+
+          <!-- Mirrored point annotations -->
+          <circle cx="100" cy="85" r="4" fill="#b04e2c" />
+          <text x="108" y="78" font-family="'Cormorant Garamond', serif" font-style="italic" font-size="14" fill="#8a3a1e">g(p)</text>
+
+          <circle cx="300" cy="275" r="4" fill="#1e4d8c" />
+          <text x="310" y="285" font-family="'Cormorant Garamond', serif" font-style="italic" font-size="14" fill="#143866">g(−p) = −g(p)</text>
+
+          <!-- zero crossing (the answer) -->
+          <circle cx="165" cy="180" r="7" fill="#a8762c" stroke="#1c1a16" stroke-width="1.5" />
+          <text x="135" y="220" font-family="'Cormorant Garamond', serif" font-style="italic" font-size="13" fill="#8a3a1e">g(q) = 0</text>
+          <text x="135" y="235" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6459">→ f(q) = f(−q)</text>
+
+          <!-- title -->
+          <text x="200" y="35" text-anchor="middle"
+                font-family="'Cormorant Garamond', serif" font-style="italic" font-size="15" fill="#1c1a16">
+            g(x) = f(x) − f(−x), an odd function
+          </text>
+          <text x="200" y="55" text-anchor="middle"
+                font-family="'Inter', sans-serif" font-size="11" fill="#6b6459" letter-spacing="0.1em">
+            CONTINUOUS · CROSSES ZERO BY IVT
+          </text>
+        </svg>
+
+        <div class="aside" style="margin-top: 1rem;">
+          The higher-dimensional cases need much heavier tools because
+          IVT only works in 1D. It can't force two equations to be
+          zero simultaneously on a 2-sphere. But the core idea,
+          <em>turn &ldquo;find a matching pair&rdquo; into &ldquo;find
+          a zero of an odd map&rdquo;</em>, shows up everywhere.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- TAB 04 · HIGHER DIMENSIONS / SCEPIN REDUCTION -->
+<!-- ============================================================ -->
+<section class="panel" id="reduction">
+  <div class="container">
+
+    <div class="panel-head">
+      <div class="panel-head__eyebrow">§ 04 · Higher dimensions</div>
+      <h1 class="panel-head__title">Ščepin's <em>elementary</em> route up.</h1>
+      <p class="panel-head__kicker">
+        Evgeny Ščepin gave an elementary proof of the
+        $n$-dimensional case by reducing it to the 2-dimensional one.
+        Here's how the ladder works.
+      </p>
+    </div>
+
+    <div class="split">
+      <div class="prose">
+        <p>
+          The cool thing about Ščepin's paper<sup>[3]</sup> is that
+          he doesn't try to prove higher-dimensional Borsuk–Ulam
+          directly. Instead he shows: if you already know the 2D
+          case, you get every higher dimension for free, by
+          induction. The 2D case has its own elementary proof (via
+          Tucker's lemma or Sperner-style labelings), so this gives
+          an elementary proof for all $n \geq 2$.
+        </p>
+
+        <h3>The strategy in five steps</h3>
+
+        <div class="proof-step">
+          <div class="proof-step__num">1</div>
+          <div class="proof-step__body">
+            <h4>Contrapositive.</h4>
+            <p>Assume some continuous $f \colon S^n \to \mathbb{R}^n$
+            sends no pair of opposite points to the same value. Now
+            derive a contradiction.</p>
+          </div>
+        </div>
+
+        <div class="proof-step">
+          <div class="proof-step__num">2</div>
+          <div class="proof-step__body">
+            <h4>Turn $f$ into an odd sphere map.</h4>
+            <p>Define $g(x) = (f(x) - f(-x)) / \|f(x) - f(-x)\|$.
+            The denominator never vanishes (our assumption), so $g$
+            is continuous, and it satisfies $g(-x) = -g(x)$. You now
+            have a continuous odd map $S^n \to S^{n-1}$.</p>
+          </div>
+        </div>
+
+        <div class="proof-step">
+          <div class="proof-step__num">3</div>
+          <div class="proof-step__body">
+            <h4>Drop a dimension.</h4>
+            <p>The key lemma: for $n \geq 4$, any continuous odd map
+            $S^n \to S^{n-1}$ gives rise to one $S^{n-1} \to S^{n-2}$.
+            The construction uses a geometric object Ščepin calls a
+            &ldquo;simple section&rdquo; of the sphere. Iterate this
+            and you drop dimension by dimension.</p>
+          </div>
+        </div>
+
+        <div class="proof-step">
+          <div class="proof-step__num">4</div>
+          <div class="proof-step__body">
+            <h4>Handle $n = 3$ separately.</h4>
+            <p>The reduction fails for $n \leq 3$ for a technical
+            reason about needing enough ambient space. Ščepin handles
+            $n = 3$ with its own argument that ultimately reaches
+            down to the 2D case.</p>
+          </div>
+        </div>
+
+        <div class="proof-step">
+          <div class="proof-step__num">5</div>
+          <div class="proof-step__body">
+            <h4>Hit bottom and contradict.</h4>
+            <p>The chain of reductions eventually hands you a
+            continuous odd map $S^2 \to S^1$. But the 2-dimensional
+            Borsuk–Ulam theorem (the elementary one) says no such
+            map exists. Contradiction. So our original $f$ couldn't
+            exist either. <strong>∎</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: dimension ladder diagram + key lemma explainer -->
+      <div>
+        <div class="vcard" style="margin-bottom: 1.5rem;">
+          <div class="vcard__label">The ladder of reductions</div>
+          <div class="vcard__title">Descending one dimension at a time</div>
+
+          <div class="ladder">
+            <div class="ladder__rung">
+              <span class="ladder__dim">$S^n$</span>
+              <span class="ladder__arrow">→</span>
+              <span>odd map to $S^{n-1}$ by the key lemma</span>
+            </div>
+            <div class="ladder__rung">
+              <span class="ladder__dim">$S^{n-1}$</span>
+              <span class="ladder__arrow">→</span>
+              <span>odd map to $S^{n-2}$</span>
+            </div>
+            <div class="ladder__rung">
+              <span class="ladder__dim">⋮</span>
+              <span class="ladder__arrow"></span>
+              <span>keep descending</span>
+            </div>
+            <div class="ladder__rung">
+              <span class="ladder__dim">$S^3$</span>
+              <span class="ladder__arrow">→</span>
+              <span>odd map to $S^2$ (special n=3 argument)</span>
+            </div>
+            <div class="ladder__rung base">
+              <span class="ladder__dim">$S^2$</span>
+              <span class="ladder__arrow">→</span>
+              <span>no odd map to $S^1$ — contradiction ∎</span>
+            </div>
+          </div>
+
+          <p style="font-size: 13px; color: var(--ink-soft); line-height: 1.55; margin-top: 0.8rem;">
+            Each step cuts dimension by one. At the bottom, the 2D
+            case (proved elementarily with Tucker's lemma) gives the
+            contradiction we need.
+          </p>
+        </div>
+
+        <div class="vcard">
+          <div class="vcard__label">What the key lemma actually does</div>
+          <div class="vcard__title" style="font-size: 1.15rem;">The geometric idea</div>
+          <p style="font-size: 13.5px; color: var(--ink-soft); line-height: 1.65;">
+            Given an odd map $f\colon S^n \to S^{n-1}$, look at the
+            preimages of two opposite &ldquo;regular values.&rdquo;
+            For a generic value, each preimage is a
+            <strong>1-dimensional graph</strong>. Find a centrally
+            symmetric hypersurface (a &ldquo;simple section&rdquo;)
+            that separates them. That hypersurface is topologically
+            $S^{n-1}$. Restrict $f$ to it, compose with the retraction
+            $S^{n-1} \setminus \{\pm A\} \to S^{n-2}$, and you've
+            got a dimension-reduced odd map.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historical portraits -->
+    <div class="panel-head" style="margin-top: 3.5rem;">
+      <div class="panel-head__eyebrow">§ 04 · continued</div>
+      <h1 class="panel-head__title" style="font-size: 1.8rem;">The <em>two people</em> behind the theorem.</h1>
+    </div>
+
+    <div class="portraits">
+      <div class="portrait">
+        <img src="data:image/jpeg;base64,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AHUFqZJKqIXc4Arn9S13GY4P++qAN5540++4FZN7rkUOVh+dq5ma7nmb55GOaix3oAv3eq3NznL7V9qoEk8nk0Gj+7QAfw02hmahaAHbaKN1FABQBkgetFT2cfmXMa+9AG9pVt5EIP8AE1VdbkZkKJ0HWtYDaABVPVFSGxkJ+83f3NAHJKvNTL92o0HrT8FvlWgDa0HUfLk8iRvlPT610ytkVyul6W0pDtwF5zXTR/KAvpQBLTJHUDJ4xStWRrl75MXlp94/yoAzdYvTPOY1b92P51lNTicnJ701qACiiigA5pKDSGgBu6igstN3igBxbrRGopud1OoAfgUvFNpaAPSaYzADJpWaszWb1be2I/ibpQBk67qbSSGCFvl7/WsLk9etPLksSep5plADqKbRQA6imrTqAGtSK1JvpwWgAp1Np1ABWlosO65LelZtbugR/Iz0Aacat5x/uiszxBMpRbcdetac8ywwvI3auWnme4mMrev6UARRxIMbqtwW6Fxs9aqSNV+w+6p96AOktoxDCFXvUuO9JF91fpSs2KAIrq4WGF3btXI3Vw1xM7t0q9rV95knkr90dfrWUaAGmiinUANpGpc0lADKa27inU07ttABtoCrThTqABVFG2lpBQAtJS5pp60AekyVyGuTNLeEN0HSuvkri9Y/4/DQBmt1oobrRQAU6m06gBtNyadTaAH4FLSUtADadTadQAV0mjgCyGK5uuk0f/jyFAEWtuRbKB0J5rEWtnXP+PZPrWMtACfxVasyfOUds1V/iq1Z/wCuX60AdUn3BVTUp3itWZPvetW0+4Kz9X/49GoA5liWbLMSSeaSlPX8aSgAptOptADSTRSGloAbR/CaKP4TQALThTVpwoAdTTTqaaACnU2nUAf/2Q==" alt="Karol Borsuk" />
+        <div>
+          <div class="portrait__name">Karol Borsuk</div>
+          <div class="portrait__dates">Warsaw · 1905–1982</div>
+          <p class="portrait__body">
+            Professor at the University of Warsaw and a central
+            figure of the Warsaw School of Mathematics. Proved the
+            theorem in 1933 as one of three results in his paper.
+            During WWII he ran a secret stationery store that doubled
+            as a Home Army meeting point and gave underground lectures.
+            Later pioneered <em>shape theory</em>.
+          </p>
+        </div>
+      </div>
+
+      <div class="portrait">
+        <img src="data:image/jpeg;base64,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" alt="Stanisław Ulam" />
+        <div>
+          <div class="portrait__name">Stanisław Ulam</div>
+          <div class="portrait__dates">Lwów → Los Alamos · 1909–1984</div>
+          <p class="portrait__body">
+            Conjectured the theorem around 1930 at the Scottish Café
+            in Lwów, where mathematicians (Banach, Mazur, and others)
+            used to hang out and scribble problems into the
+            <em>Scottish Book</em>. Later moved to the US, worked on
+            the Manhattan Project, and invented Monte Carlo with von
+            Neumann. His memoir <em>Adventures of a Mathematician</em>
+            covers the Lwów years.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- TAB 05 · VISUALIZATION (the video showcase) -->
+<!-- ============================================================ -->
+<section class="panel" id="visualization">
+  <div class="container">
+
+    <div class="panel-head">
+      <div class="panel-head__eyebrow">§ 05 · The visualization</div>
+      <h1 class="panel-head__title">Ten seconds of search, four seconds of <em>payoff</em>.</h1>
+      <p class="panel-head__kicker">
+        A sphere with two continuous fields on its surface. Two
+        antipodal markers sweeping a spiral path across it. The
+        moment where the theorem's guaranteed match shows up.
+      </p>
+    </div>
+
+    <!-- Video -->
+    <div class="video-frame">
+      <video controls preload="metadata">
+        <source src="borsuk_ulam.mp4" type="video/mp4" />
+      </video>
+      <div class="video-placeholder" id="video-placeholder">
+        <div class="video-placeholder__title">Video loading…</div>
+        <div class="video-placeholder__note">borsuk_ulam.mp4 · 15.8s · 1080p</div>
+      </div>
+    </div>
+
+    <div class="video-meta">
+      <span>380 frames · 24 fps · 1920×1080</span>
+      <span>Rendered in Blender 4.5 · Eevee Next</span>
+    </div>
+
+    <!-- The three acts, visualized -->
+    <div class="panel-head" style="margin-top: 3rem;">
+      <div class="panel-head__eyebrow">§ 05 · continued</div>
+      <h1 class="panel-head__title" style="font-size: 1.8rem;">The <em>three acts</em> of the animation.</h1>
+    </div>
+
+    <div class="split">
+      <!-- act 1 -->
+      <div class="vcard">
+        <div class="vcard__label">Act 1 · Search (frames 1–240)</div>
+        <div class="vcard__title">The spiral sweep</div>
+        <svg viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg" style="margin: 0.5rem auto; display:block;">
+          <defs>
+            <radialGradient id="actSphere1" cx="40%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#d49a7a" />
+              <stop offset="50%" stop-color="#8a7a66" />
+              <stop offset="100%" stop-color="#2a4266" />
+            </radialGradient>
+          </defs>
+          <circle cx="130" cy="100" r="75" fill="url(#actSphere1)" />
+          <!-- spiral path -->
+          <path d="M 130 30 Q 185 55, 160 100 T 100 145 Q 75 130, 95 95 T 130 30"
+                fill="none" stroke="#f4efe4" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.8" />
+          <!-- markers -->
+          <circle cx="160" cy="100" r="6" fill="#e08655" />
+          <circle cx="100" cy="100" r="6" fill="#5e87b8" />
+          <line x1="100" y1="100" x2="160" y2="100" stroke="#3a362e" stroke-width="1" opacity="0.6" />
+        </svg>
+        <p style="font-size: 13.5px; color: var(--ink-soft); line-height: 1.55;">
+          Two antipodal markers sweep a spiral path across the sphere.
+          Four colored bars at the markers track the values of $T$ and
+          $P$ at both points in real time. Most of the time, the
+          bars don't match. That's normal.
+        </p>
+      </div>
+
+      <!-- act 2 -->
+      <div class="vcard">
+        <div class="vcard__label">Act 2 · Glide (frames 241–280)</div>
+        <div class="vcard__title">The smooth transition</div>
+        <svg viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg" style="margin: 0.5rem auto; display:block;">
+          <defs>
+            <radialGradient id="actSphere2" cx="40%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#d49a7a" />
+              <stop offset="50%" stop-color="#8a7a66" />
+              <stop offset="100%" stop-color="#2a4266" />
+            </radialGradient>
+          </defs>
+          <circle cx="130" cy="100" r="75" fill="url(#actSphere2)" />
+          <!-- glide path shown as bezier arrow -->
+          <path d="M 185 70 Q 220 110, 175 145" fill="none" stroke="#a8762c" stroke-width="2"
+                stroke-dasharray="4 4" />
+          <polygon points="170,145 178,140 180,150" fill="#a8762c" />
+          <circle cx="185" cy="70" r="5" fill="#e08655" opacity="0.5" />
+          <circle cx="175" cy="145" r="6" fill="#e08655" />
+          <text x="220" y="100" font-family="'Cormorant Garamond', serif" font-style="italic" font-size="11" fill="#8a3a1e">ease</text>
+        </svg>
+        <p style="font-size: 13.5px; color: var(--ink-soft); line-height: 1.55;">
+          The markers smoothly glide from the end of the spiral
+          search to the true matching pair, found by evaluating
+          mismatch at 20,000 sampled points on the sphere. Bezier
+          easing keeps the transition feeling natural.
+        </p>
+      </div>
+
+      <!-- act 3 -->
+      <div class="vcard">
+        <div class="vcard__label">Act 3 · Payoff (frames 281–380)</div>
+        <div class="vcard__title">The four-second hold</div>
+        <svg viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg" style="margin: 0.5rem auto; display:block;">
+          <defs>
+            <radialGradient id="actSphere3" cx="40%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#d49a7a" />
+              <stop offset="50%" stop-color="#8a7a66" />
+              <stop offset="100%" stop-color="#2a4266" />
+            </radialGradient>
+            <radialGradient id="glowGold" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffd88a" stop-opacity="0.9" />
+              <stop offset="100%" stop-color="#ffd88a" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="130" cy="100" r="75" fill="url(#actSphere3)" />
+          <!-- glowing halos -->
+          <circle cx="165" cy="85" r="22" fill="url(#glowGold)" />
+          <circle cx="95" cy="115" r="22" fill="url(#glowGold)" />
+          <!-- gold diameter -->
+          <line x1="95" y1="115" x2="165" y2="85" stroke="#a8762c" stroke-width="2.5" />
+          <!-- markers (now gold) -->
+          <circle cx="165" cy="85" r="7" fill="#ffd88a" stroke="#a8762c" stroke-width="1.5" />
+          <circle cx="95" cy="115" r="7" fill="#ffd88a" stroke="#a8762c" stroke-width="1.5" />
+          <!-- f(x)=f(-x) -->
+          <text x="130" y="185" text-anchor="middle" font-family="'Cormorant Garamond', serif"
+                font-style="italic" font-size="15" fill="#8a3a1e">f(x) = f(−x)</text>
+        </svg>
+        <p style="font-size: 13.5px; color: var(--ink-soft); line-height: 1.55;">
+          Markers pulse white-gold. The diameter line flares warm
+          gold. A text banner reading $f(x) = f(-x)$ appears. Four
+          seconds of hold so the viewer can actually absorb what just
+          happened. Then everything fades back to baseline.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- TAB 06 · HOW IT WAS BUILT -->
+<!-- ============================================================ -->
+<section class="panel" id="build">
+  <div class="container">
+
+    <div class="panel-head">
+      <div class="panel-head__eyebrow">§ 06 · Construction in Blender 4.5</div>
+      <h1 class="panel-head__title">From empty scene to <em>finished</em> visualization.</h1>
+      <p class="panel-head__kicker">
+        The scene is built as a sequence of nine conceptual steps.
+        Each one has a specific mathematical job in telling the
+        theorem's story.
+      </p>
+    </div>
+
+    <!-- Top-level diagram: how the scene graph fits together -->
+    <div class="vcard vcard--ink" style="margin-bottom: 2rem;">
+      <div class="vcard__label">Scene graph · how objects depend on each other</div>
+      <div class="vcard__title" style="color:var(--cream);margin-bottom: 1.5rem;">The single source of truth</div>
+      <svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="glowA"><feGaussianBlur stdDeviation="2" /></filter>
+        </defs>
+
+        <!-- sphere at left -->
+        <rect x="20" y="110" width="130" height="60" rx="6" fill="none" stroke="#f4efe4" stroke-width="1.5" />
+        <text x="85" y="135" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-style="italic" font-size="15" fill="#f4efe4">EarthSphere</text>
+        <text x="85" y="155" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#b8ad99">shader + noise fields</text>
+
+        <!-- center: driver empty (source of truth) -->
+        <rect x="250" y="110" width="160" height="60" rx="6" fill="#b04e2c" stroke="#8a3a1e" stroke-width="1.5" />
+        <text x="330" y="135" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-style="italic" font-size="16" fill="#f4efe4">AntipodeDriver</text>
+        <text x="330" y="155" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#fff0e0">(invisible empty · animated)</text>
+
+        <!-- marker A top right -->
+        <rect x="500" y="20" width="180" height="50" rx="6" fill="none" stroke="#e08655" stroke-width="1.5" />
+        <text x="590" y="40" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-style="italic" font-size="14" fill="#e08655">MarkerA</text>
+        <text x="590" y="58" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#b8ad99">loc = +1.02 · driver</text>
+
+        <!-- marker B bottom right -->
+        <rect x="500" y="210" width="180" height="50" rx="6" fill="none" stroke="#5e87b8" stroke-width="1.5" />
+        <text x="590" y="230" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-style="italic" font-size="14" fill="#5e87b8">MarkerB</text>
+        <text x="590" y="248" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#b8ad99">loc = −1.02 · driver</text>
+
+        <!-- diameter line middle right -->
+        <rect x="500" y="115" width="180" height="50" rx="6" fill="none" stroke="#a8762c" stroke-width="1.5" />
+        <text x="590" y="135" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-style="italic" font-size="14" fill="#a8762c">DiameterLine</text>
+        <text x="590" y="153" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#b8ad99">Damped Track → MarkerA</text>
+
+        <!-- arrows from driver to markers -->
+        <path d="M 410 135 Q 450 95, 498 45" fill="none" stroke="#e08655" stroke-width="1.5" marker-end="url(#arr1)" />
+        <path d="M 410 145 Q 450 190, 498 235" fill="none" stroke="#5e87b8" stroke-width="1.5" marker-end="url(#arr2)" />
+        <path d="M 410 140 L 498 140" fill="none" stroke="#a8762c" stroke-width="1.5" marker-end="url(#arr3)" />
+
+        <defs>
+          <marker id="arr1" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 Z" fill="#e08655" />
+          </marker>
+          <marker id="arr2" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 Z" fill="#5e87b8" />
+          </marker>
+          <marker id="arr3" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 Z" fill="#a8762c" />
+          </marker>
+        </defs>
+
+        <!-- labels on arrows -->
+        <text x="445" y="85" font-family="'JetBrains Mono',monospace" font-size="9" fill="#f4efe4">driver ×3</text>
+        <text x="445" y="205" font-family="'JetBrains Mono',monospace" font-size="9" fill="#f4efe4">driver ×3</text>
+        <text x="445" y="128" font-family="'JetBrains Mono',monospace" font-size="9" fill="#f4efe4">constraint</text>
+      </svg>
+
+      <p style="font-size: 13px; color: rgba(244,239,228,0.75); line-height: 1.55; margin-top: 0.8rem;">
+        <strong style="color:var(--cream);">One thing is animated: the AntipodeDriver.</strong>
+        Everything else follows automatically. Markers read its position through Blender's driver system. The diameter
+        tracks Marker A via a Damped Track constraint. This is how we guarantee the markers stay mathematically
+        antipodal at every single frame.
+      </p>
+    </div>
+
+    <!-- Nine steps in a grid -->
+    <div class="prose" style="max-width: 100%;">
+      <div class="proof-step">
+        <div class="proof-step__num">1</div>
+        <div class="proof-step__body">
+          <h4>The sphere.</h4>
+          <p>A UV sphere at the origin with smooth shading, representing the domain $S^2$.
+          Rotates slowly on its vertical axis. The rotation has no mathematical meaning.
+          It just lets the camera see different parts of the surface as the animation plays.</p>
+          <span class="tech__tag">Mesh → UV Sphere</span>
+          <span class="tech__tag">Shade Smooth</span>
+          <span class="tech__tag">Rotation keyframes</span>
+        </div>
+      </div>
+
+      <div class="proof-step">
+        <div class="proof-step__num">2</div>
+        <div class="proof-step__body">
+          <h4>Two continuous fields on the surface.</h4>
+          <p>The map $f \colon S^2 \to \mathbb{R}^2$ is painted onto the sphere with a
+          procedural shader built from two Perlin-noise textures. One goes through a color
+          ramp mapping to a <em>cool blue → cream → warm terracotta</em> gradient
+          (&ldquo;temperature&rdquo;). The other subtly modulates brightness
+          (&ldquo;pressure&rdquo;). Both noises use 3D object coordinates so the pattern
+          is locked to the sphere.</p>
+          <span class="tech__tag">Shader Editor</span>
+          <span class="tech__tag">Noise Texture ×2</span>
+          <span class="tech__tag">Color Ramp</span>
+          <span class="tech__tag">Mix (Multiply)</span>
+          <span class="tech__tag">Principled BSDF</span>
+        </div>
+      </div>
+
+      <div class="proof-step">
+        <div class="proof-step__num">3</div>
+        <div class="proof-step__body">
+          <h4>A driver empty as the single source of truth.</h4>
+          <p>An invisible <em>Empty</em> object sits at the origin. Its animated position
+          represents the axis pointing through the antipodal pair. One direction toward
+          Marker A, the negative toward Marker B. This is the only thing we animate.
+          Everything else is reactive.</p>
+          <span class="tech__tag">Add → Empty</span>
+          <span class="tech__tag">Named "AntipodeDriver"</span>
+        </div>
+      </div>
+
+      <div class="proof-step">
+        <div class="proof-step__num">4</div>
+        <div class="proof-step__body">
+          <h4>Two markers, mirrored via drivers.</h4>
+          <p>Two emissive spheres (one terracotta, one blue). Each of their X, Y, Z position
+          components is controlled by a <em>Driver</em> reading the Empty's corresponding
+          coordinate times $\pm 1.02$. Because both markers read the same source, they stay
+          mathematically antipodal at every frame.</p>
+          <span class="tech__tag">UV Sphere ×2</span>
+          <span class="tech__tag">Emission shader</span>
+          <span class="tech__tag">Scripted Driver ×6</span>
+        </div>
+      </div>
+
+      <div class="proof-step">
+        <div class="proof-step__num">5</div>
+        <div class="proof-step__body">
+          <h4>A diameter line via Damped Track.</h4>
+          <p>A thin cylinder at the origin plays the diameter. A <em>Damped Track</em>
+          constraint tells it to always point its $+Z$ axis at Marker A. Since Marker B
+          is opposite, the cylinder's other end tracks Marker B for free.</p>
+          <span class="tech__tag">Cylinder</span>
+          <span class="tech__tag">Damped Track constraint</span>
+        </div>
+      </div>
+
+      <div class="proof-step">
+        <div class="proof-step__num">6</div>
+        <div class="proof-step__body">
+          <h4>Four value bars keyframed per frame.</h4>
+          <p>At each marker, two thin emissive bars sit radially. A terracotta bar for $f_1$
+          (temperature), a blue bar for $f_2$ (pressure). Heights are scaled to the
+          magnitude of the respective function evaluated at the marker's position.
+          Orientations rotate radially outward using spherical-to-Euler conversion.
+          Location, scale, and rotation are keyframed every frame.</p>
+          <span class="tech__tag">Cylinder ×4</span>
+          <span class="tech__tag">Emission</span>
+          <span class="tech__tag">Per-frame keyframes</span>
+        </div>
+      </div>
+
+      <div class="proof-step">
+        <div class="proof-step__num">7</div>
+        <div class="proof-step__body">
+          <h4>Global search for the true match.</h4>
+          <p>The spiral sweep covers a curve on the sphere, not the full 2D surface.
+          To find the globally correct matching pair, 20,000 uniformly distributed points
+          (via Fibonacci lattice) are evaluated under the mismatch function
+          $M(x) = |f_1(x) - f_1(-x)| + |f_2(x) - f_2(-x)|$. The minimum is found and
+          pinned as the animation's target.</p>
+          <span class="tech__tag">Fibonacci lattice</span>
+          <span class="tech__tag">Mismatch minimization</span>
+          <span class="tech__tag">Baked as keyframe</span>
+        </div>
+      </div>
+
+      <div class="proof-step">
+        <div class="proof-step__num">8</div>
+        <div class="proof-step__body">
+          <h4>Glide, freeze, and celebrate.</h4>
+          <p>Frames 241–280 interpolate the AntipodeDriver smoothly from spiral-end
+          to the true match. Frames 281–380 hold on the match for four seconds.
+          Markers' emission materials pulse up from baseline color to bright white-gold
+          and back. The diameter flares warm gold. A 3D text object reading $f(x) = f(-x)$
+          fades in via scale keyframes.</p>
+          <span class="tech__tag">Bezier easing</span>
+          <span class="tech__tag">Material keyframes</span>
+          <span class="tech__tag">Text object</span>
+          <span class="tech__tag">Track To (camera)</span>
+        </div>
+      </div>
+
+      <div class="proof-step">
+        <div class="proof-step__num">9</div>
+        <div class="proof-step__body">
+          <h4>Lighting, camera, render.</h4>
+          <p>Three area lights in a classic three-point arrangement (key, fill, back),
+          each with a <em>Track To</em> constraint pointing at the sphere. Camera
+          half-orbits the scene over 10 seconds with a Track To so the sphere stays
+          framed. Final render is Eevee Next at 1920×1080 / 24fps / Standard color
+          management.</p>
+          <span class="tech__tag">Area lights ×3</span>
+          <span class="tech__tag">Camera orbit</span>
+          <span class="tech__tag">Eevee Next · 64 samples</span>
+          <span class="tech__tag">Standard view transform</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- TAB 07 · REFERENCES -->
+<!-- ============================================================ -->
+<section class="panel" id="references">
+  <div class="container">
+
+    <div class="panel-head">
+      <div class="panel-head__eyebrow">§ 07 · Sources</div>
+      <h1 class="panel-head__title">References and <em>further reading</em>.</h1>
+      <p class="panel-head__kicker">
+        Full citations for every source consulted during the project,
+        in order of use.
+      </p>
+    </div>
+
+    <ol class="refs">
+      <li>
+        <div>
+          <span class="ref-title">K. Borsuk.</span>
+          Drei Sätze über die n-dimensionale euklidische Sphäre.
+          Fundamenta Mathematicae, <strong>20</strong> (1933), pp. 177–190.
+          <span class="ref-meta">
+            The original paper. DOI:
+            <a href="https://doi.org/10.4064/fm-20-1-177-190" target="_blank" rel="noopener">10.4064/fm-20-1-177-190</a>
+          </span>
+        </div>
+      </li>
+
+      <li>
+        <div>
+          <span class="ref-title">J. Matoušek.</span>
+          Using the Borsuk–Ulam Theorem: Lectures on Topological Methods in Combinatorics and Geometry.
+          Springer-Verlag, Berlin, 2003.
+          <span class="ref-meta">The standard reference for applications and consequences.</span>
+        </div>
+      </li>
+
+      <li>
+        <div>
+          <span class="ref-title">E. V. Ščepin.</span>
+          Elementary proof of the Borsuk–Ulam theorem.
+          Steklov Mathematical Institute preprint.
+          <span class="ref-meta">
+            <a href="https://homepage.mi-ras.ru/~scepin/elem-proof-reduct.pdf" target="_blank" rel="noopener">
+              homepage.mi-ras.ru/~scepin/elem-proof-reduct.pdf
+            </a>
+          </span>
+        </div>
+      </li>
+
+      <li>
+        <div>
+          <span class="ref-title">L. Lyusternik and L. Shnirel'man.</span>
+          Topological Methods in Variational Problems (in Russian). Moscow, 1930.
+          <span class="ref-meta">Earliest mention of the statement, pre-dating Borsuk's proof.</span>
+        </div>
+      </li>
+
+      <li>
+        <div>
+          <span class="ref-title">H. Steinlein.</span>
+          Borsuk's antipodal theorem and its generalizations and applications: a survey.
+          In: Méthodes topologiques en analyse non linéaire, Sém. Math. Sup. 95,
+          Presses Univ. Montréal, 1985, pp. 166–235.
+          <span class="ref-meta">A survey of alternative proofs.</span>
+        </div>
+      </li>
+
+      <li>
+        <div>
+          <span class="ref-title">F. E. Su.</span>
+          Borsuk–Ulam implies Brouwer: A direct construction.
+          American Mathematical Monthly, <strong>104</strong>(9) (1997), pp. 855–859.
+          <span class="ref-meta">
+            DOI: <a href="https://doi.org/10.2307/2975293" target="_blank" rel="noopener">10.2307/2975293</a>
+          </span>
+        </div>
+      </li>
+
+      <li>
+        <div>
+          <span class="ref-title">J. J. O'Connor and E. F. Robertson.</span>
+          Karol Borsuk — Biography.
+          MacTutor History of Mathematics Archive, University of St Andrews.
+          <span class="ref-meta">
+            <a href="https://mathshistory.st-andrews.ac.uk/Biographies/Borsuk/" target="_blank" rel="noopener">
+              mathshistory.st-andrews.ac.uk/Biographies/Borsuk
+            </a>
+            · Portraits of Borsuk and Ulam sourced from MacTutor.
+          </span>
+        </div>
+      </li>
+
+      <li>
+        <div>
+          <span class="ref-title">S. Ulam.</span>
+          Adventures of a Mathematician.
+          Charles Scribner's Sons, New York, 1976.
+          <span class="ref-meta">
+            Ulam's memoir, including the Lwów period when the theorem was conjectured.
+          </span>
+        </div>
+      </li>
+
+      <li>
+        <div>
+          <span class="ref-title">Blender Foundation.</span>
+          Blender 4.5 LTS Python API and Shader Nodes Reference.
+          <span class="ref-meta">
+            <a href="https://docs.blender.org/api/current/" target="_blank" rel="noopener">docs.blender.org/api/current</a> ·
+            <a href="https://docs.blender.org/manual/en/latest/" target="_blank" rel="noopener">docs.blender.org/manual</a>
+          </span>
+        </div>
+      </li>
+    </ol>
+
+    <p style="font-size: 12px; color: var(--ink-mute); margin-top: 2rem; font-style: italic;">
+      Photographic portraits of Karol Borsuk and Stanisław Ulam are reproduced
+      from the MacTutor History of Mathematics Archive, University of St Andrews [7],
+      and are used for educational purposes. Blender is © The Blender Foundation (GPL licensed).
+    </p>
+
+  </div>
+</section>
+
+</main>
+
+
+<!-- ============================================================ -->
+<!-- COLOPHON -->
+<!-- ============================================================ -->
+<footer class="colophon">
+  <div class="colophon__mark">— ∞ —</div>
+  <p class="colophon__text">
+    A 3D Graphics &amp; Applications final project for the
+    Mathematics Reading Course, Winter 2026.
+  </p>
+  <p class="colophon__meta">
+    <a href="https://amanda-yin-x.github.io/" target="_blank" rel="noopener" style="color: var(--terracotta); text-decoration: none; border-bottom: 1px solid rgba(176, 78, 44, 0.3);">Amanda Yin</a>
+    &nbsp;·&nbsp; supervised by Prof. S. Aretakis
+    &nbsp;·&nbsp; University of Toronto &nbsp;·&nbsp; 2026
+  </p>
+</footer>
+
+
+<script>
+  // ==================== TAB NAVIGATION ====================
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.panel');
+
+  function activateTab(tabId) {
+    tabButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+    panels.forEach(panel => {
+      panel.classList.toggle('active', panel.id === tabId);
+    });
+    // Scroll to top of page when switching tabs
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Update hash for shareable links (wrapped: fails silently in sandboxed previews)
+    try {
+      if (history.replaceState) {
+        history.replaceState(null, '', '#' + tabId);
+      }
+    } catch (e) { /* ignore - works fine on a real deployed site */ }
+    // Re-render KaTeX after panel switch
+    if (window.renderMathInElement) {
+      setTimeout(() => {
+        renderMathInElement(document.body, {
+          delimiters:[
+            {left:'$$',right:'$$',display:true},
+            {left:'$',right:'$',display:false}
+          ],
+          throwOnError:false
+        });
+      }, 50);
+    }
+  }
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => activateTab(btn.dataset.tab));
+  });
+
+  // Support URL hash for direct links
+  if (window.location.hash) {
+    const tab = window.location.hash.substring(1);
+    if (document.getElementById(tab)) {
+      activateTab(tab);
+    }
+  }
+
+  // Keyboard navigation: arrow keys switch tabs
+  document.addEventListener('keydown', (e) => {
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (!activeTab) return;
+    const tabs = Array.from(tabButtons);
+    const idx = tabs.indexOf(activeTab);
+    if (e.key === 'ArrowRight' && idx < tabs.length - 1) {
+      tabs[idx + 1].click();
+    } else if (e.key === 'ArrowLeft' && idx > 0) {
+      tabs[idx - 1].click();
+    }
+  });
+
+  // ==================== VIDEO FALLBACK ====================
+  const video = document.querySelector('.video-frame video');
+  const ph = document.getElementById('video-placeholder');
+  if (video && ph) {
+    video.addEventListener('error', () => {
+      ph.classList.add('visible');
+      video.style.display = 'none';
+    });
+  }
+</script>
+
+</body>
+</html>
